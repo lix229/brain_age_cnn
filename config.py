@@ -274,3 +274,23 @@ def get_grid_search_config():
     config.grid_search.batch_factors = [0.5, 1.0, 2.0]
     config.grid_search.learning_rates = (7 * np.logspace(-6, -3, 5)).tolist()
     return config
+
+
+def get_memory_efficient_config():
+    """
+    Get a preset configuration optimized for large datasets with limited memory.
+    
+    Returns:
+        ExperimentConfig: Configuration with smaller batch size (16) and 
+                         HiPerGator-specific paths for memory-efficient training.
+    """
+    config = ExperimentConfig(
+        name="memory_efficient",
+        description="Configuration optimized for large datasets"
+    )
+    config.training.batch_size = 16  # Smaller batch size to reduce memory usage
+    config.training.epochs = 50
+    config.training.learning_rate = 5e-5
+    # Use HiPerGator paths
+    config.data.image_base_dir = "/blue/cruzalmeida/pvaldeshernandez/slices_for_deepbrainnet_new"
+    return config
