@@ -1,0 +1,70 @@
+{
+  "name": "quick_test",
+  "description": "Quick test configuration with minimal epochs",
+  "output_dir": "experiments",
+  "data": {
+    "image_list_csv": "data/dataset_splits.csv",
+    "image_base_dir": "/blue/cruzalmeida/pvaldeshernandez/slices_for_deepbrainnet_new",
+    "validation_split": 0.2,
+    "test_split": 0.1,
+    "random_seed": 42,
+    "image_size": [
+      224,
+      224
+    ],
+    "normalize": true,
+    "augmentation": false,
+    "image_col": "image_name",
+    "age_col": "age",
+    "patient_id_col": "patient_id",
+    "split_col": "split"
+  },
+  "model": {
+    "base_model_path": "model/DBN_VGG16.h5",
+    "finetune_layers": [
+      "dense_3",
+      "dropout_2",
+      "dense_4"
+    ],
+    "finetune_vgg_blocks": 1,
+    "freeze_backbone": false
+  },
+  "training": {
+    "batch_size": 4,
+    "epochs": 5,
+    "learning_rate": 0.0001,
+    "optimizer": "adam",
+    "loss_function": "mse",
+    "metrics": [
+      "mae"
+    ],
+    "reduce_lr_patience": 5,
+    "reduce_lr_factor": 0.5,
+    "min_lr": 1e-07,
+    "early_stopping_patience": 10,
+    "early_stopping_monitor": "val_mae",
+    "checkpoint_monitor": "val_mae",
+    "checkpoint_mode": "min",
+    "save_best_only": true
+  },
+  "grid_search": {
+    "n_folds": 2,
+    "batch_factors": [
+      1.0
+    ],
+    "loss_functions": [
+      "mean_squared_error"
+    ],
+    "learning_rates": [
+      7e-06,
+      7.000000000000001e-05,
+      0.0007
+    ],
+    "shuffle_folds": true,
+    "stratify": false
+  },
+  "log_wandb": false,
+  "wandb_project": "brain-age-cnn",
+  "save_predictions": true,
+  "save_model_weights": true
+}

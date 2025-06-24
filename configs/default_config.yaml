@@ -1,0 +1,58 @@
+data:
+  age_col: age
+  augmentation: false
+  image_base_dir: img
+  image_col: image_name
+  image_list_csv: data/dataset_splits.csv
+  image_size: !!python/tuple
+  - 224
+  - 224
+  normalize: true
+  patient_id_col: patient_id
+  random_seed: 42
+  split_col: split
+  test_split: 0.1
+  validation_split: 0.2
+description: ''
+grid_search:
+  batch_factors:
+  - 1.0
+  learning_rates:
+  - 7.0e-06
+  - 7.000000000000001e-05
+  - 0.0007
+  loss_functions:
+  - mean_squared_error
+  n_folds: 3
+  shuffle_folds: true
+  stratify: false
+log_wandb: false
+model:
+  base_model_path: model/DBN_VGG16.h5
+  finetune_layers:
+  - dense_3
+  - dropout_2
+  - dense_4
+  finetune_vgg_blocks: 1
+  freeze_backbone: false
+name: brain_age_experiment
+output_dir: experiments
+save_model_weights: true
+save_predictions: true
+training:
+  batch_size: 8
+  checkpoint_mode: min
+  checkpoint_monitor: val_mae
+  early_stopping_monitor: val_mae
+  early_stopping_patience: 10
+  epochs: 50
+  learning_rate: 0.0001
+  loss_function: mse
+  metrics:
+  - mae
+  min_lr: 1.0e-07
+  optimizer: adam
+  reduce_lr_factor: 0.5
+  reduce_lr_patience: 5
+  save_best_only: true
+wandb_project: brain-age-cnn
