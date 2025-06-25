@@ -32,8 +32,8 @@ Brain Age CNN Pipeline
 │   └── Both PyTorch and Keras compatibility
 │
 ├── Training Pipeline
-│   ├── Standard Training (train_with_config.py)
-│   ├── Cross-Validation Grid Search (train_cv_gridsearch_config.py)
+│   ├── Standard Training (train.py)
+│   ├── Cross-Validation Grid Search
 │   └── Model Architecture (DBN-VGG16 finetuning)
 │
 └── Inference & Analysis
@@ -58,19 +58,11 @@ The system employs a sophisticated finetuning strategy:
 ```
 brain_age_cnn/
 ├── 📁 Core Python Files
+│   ├── train.py                       # Unified training script (main entry point)
 │   ├── config.py                      # Configuration management system
-│   ├── data_loader_csv.py             # CSV-based data loading pipeline
-│   ├── train_with_config.py           # Main training script
-│   ├── train_cv_gridsearch_config.py  # Cross-validation grid search
+│   ├── data_loader_generator.py       # Memory-efficient data loading
 │   ├── inference.py                   # Model inference and evaluation
 │   └── analyze_cv_results.py          # Results analysis and visualization
-│
-├── 📁 Configuration Files
-│   ├── configs/
-│   │   ├── default_config.json        # Default configuration
-│   │   ├── quick_test_config.json     # Fast testing (5 epochs)
-│   │   ├── full_training_config.json  # Production training (100 epochs)
-│   │   └── custom_config.json         # Custom experiment settings
 │
 ├── 📁 Data & Models
 │   ├── data/
@@ -85,8 +77,6 @@ brain_age_cnn/
 │
 └── 📁 Documentation
     ├── README.md                      # This file
-    ├── README_config_system.md        # Configuration system guide
-    ├── PROJECT_STRUCTURE.md           # Detailed project structure
     └── requirements.txt               # Python dependencies
 ```
 
@@ -125,24 +115,40 @@ patient_id,image_name,age,split
 
 ### 3. Run Training
 
-#### Quick Test (5 epochs)
+#### Unified Training Script (`train.py`)
+
+The new unified training script combines all workflows:
+
 ```bash
-python train_with_config.py --preset quick_test
+# Quick test without grid search
+python train.py --preset quick_test
+
+# Full training with automatic hyperparameter optimization
+python train.py --preset full_training --grid_search
+
+# Memory-efficient training for large datasets (>100K images)
+python train.py --preset memory_efficient
+
+# Memory-efficient with grid search
+python train.py --preset memory_efficient --grid_search
+
+# Custom configuration
+python train.py --config configs/custom_config.json --grid_search
 ```
 
-#### Full Training (100 epochs)
-```bash
-python train_with_config.py --preset full_training
-```
+#### Grid Search Integration
 
-#### Custom Configuration
-```bash
-python train_with_config.py --config configs/custom_config.json
-```
+When `--grid_search` is enabled:
+1. **Phase 1**: Performs k-fold cross-validation to find optimal hyperparameters
+2. **Phase 2**: Automatically trains final model with best parameters
+3. **Output**: Saves best configuration for future reuse
 
-#### Cross-Validation Grid Search
 ```bash
-python train_cv_gridsearch_config.py --preset grid_search
+# Example with custom grid search parameters
+python train.py --preset full_training --grid_search \
+                --grid_batch_factors "0.5,1.0,2.0" \
+                --grid_learning_rates "1e-5,5e-5,1e-4" \
+                --grid_folds 5
 ```
 
 ### 4. Model Inference
@@ -218,24 +224,33 @@ Three preset configurations are available:
 
 ## 🔬 Hyperparameter Optimization
 
-### Grid Search Parameters
+### Integrated Grid Search
 
-The system supports comprehensive hyperparameter optimization:
+Grid search is now seamlessly integrated into the main training pipeline:
+
+```bash
+# Enable grid search with any preset
+python train.py --preset full_training --grid_search
+```
+
+### Grid Search Parameters
 
 - **Batch Size Factors**: `[0.5, 1.0, 2.0]` (multiplied by base batch size)
 - **Learning Rates**: `[7e-6, 7e-5, 7e-4]` (logarithmic scale)
 - **Loss Functions**: `["mean_squared_error"]` (extensible)
-- **Cross-Validation**: 3-fold with stratification options
+- **Cross-Validation**: 3-fold by default
 
-### Running Grid Search
+### Workflow
 
-```bash
-# Quick grid search (2 folds, 5 epochs)
-python train_cv_gridsearch_config.py --preset quick_test
-
-# Full grid search (3 folds, 50 epochs)
-python train_cv_gridsearch_config.py --preset grid_search
-```
+1. **Grid Search Phase**:
+   - Tests all parameter combinations
+   - Uses k-fold cross-validation
+   - Tracks performance metrics
+   
+2. **Training Phase**:
+   - Automatically uses best parameters
+   - Trains on full training set
+   - Saves optimized configuration
 
 ### Results Analysis
 
@@ -343,12 +358,19 @@ The model uses a sophisticated Deep Belief Network + VGG16 hybrid:
 
 module load tensorflow/2.8.0
 
-# Full training run
-python train_with_config.py --preset full_training
+# Full training with grid search (recommended)
+python train.py --preset full_training --grid_search
 
-# Grid search
-python train_cv_gridsearch_config.py --preset grid_search
+# Memory-efficient for large datasets
+python train.py --preset memory_efficient --grid_search
 ```
+
+### Memory Considerations
+
+For large datasets (>100K images), use memory-efficient mode:
+- Loads images on-demand using generators
+- Reduces memory usage from ~100GB to ~4-8GB
+- Slightly slower per epoch but enables training on larger datasets
 
 ## 🔧 Advanced Usage
 
@@ -427,4 +449,4 @@ This project is developed for academic research purposes. Please cite appropriat
 
 **Author**: Developed for brain age prediction research  
 **Last Updated**: December 2024  
-**Version**: 2.0
+**Version**: 3.0 (Unified Training Pipeline)

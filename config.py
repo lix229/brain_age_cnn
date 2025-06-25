@@ -65,14 +65,19 @@ class TrainingConfig:
 @dataclass
 class GridSearchConfig:
     """Grid search configuration"""
+    enabled: bool = False  # Whether to perform grid search before training
     n_folds: int = 3
-    batch_factors: List[float] = field(default_factory=lambda: np.linspace(1, 3, 1).tolist())
+    batch_factors: List[float] = field(default_factory=lambda: [1.0])
     loss_functions: List[str] = field(default_factory=lambda: ["mean_squared_error"])
     learning_rates: List[float] = field(default_factory=lambda: (7 * np.logspace(-6, -4, 3)).tolist())
     
     # Grid search specific settings
     shuffle_folds: bool = True
     stratify: bool = False  # For regression, might want to bin ages for stratification
+    
+    # Resource management
+    max_parallel_jobs: int = 1  # Number of parallel jobs for grid search
+    save_all_models: bool = False  # Whether to save all models or just the best
 
 
 @dataclass
@@ -236,6 +241,8 @@ def get_quick_test_config():
     config.training.epochs = 5
     config.training.batch_size = 4
     config.grid_search.n_folds = 2
+    config.grid_search.batch_factors = [0.5, 1.0]
+    config.grid_search.learning_rates = [7e-5, 7e-4]
     return config
 
 
@@ -293,4 +300,7 @@ def get_memory_efficient_config():
     config.training.learning_rate = 5e-5
     # Use HiPerGator paths
     config.data.image_base_dir = "/blue/cruzalmeida/pvaldeshernandez/slices_for_deepbrainnet_new"
+    # Conservative grid search for large datasets
+    config.grid_search.batch_factors = [0.5, 1.0]
+    config.grid_search.learning_rates = (7 * np.logspace(-6, -4, 3)).tolist()
     return config
